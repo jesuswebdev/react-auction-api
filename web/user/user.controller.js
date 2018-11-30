@@ -25,3 +25,22 @@ exports.find = async (req, h) => {
 exports.update = async (req, h) => {};
 
 exports.remove = async (req, h) => {};
+
+exports.login = async (req, h) => {
+  let foundUser;
+
+  try {
+    foundUser = await User.findOne({ email: req.payload.email });
+    if (!foundUser) {
+      return Boom.badData("Combinación de Usuario/Contraseña incorrectos");
+    }
+    let same = await foundUser.comparePasswords(req.payload.password);
+    if (!same) {
+      return Boom.badData("Combinación de Usuario/Contraseña incorrectos");
+    }
+  } catch (error) {
+    return Boom.internal();
+  }
+
+  return foundUser.toJSON();
+};

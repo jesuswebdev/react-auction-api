@@ -33,18 +33,27 @@ module.exports = {
         }
       }
     });
+
     server.route({
-      method: "GET",
-      path: "/",
-      handler: User.find,
+      method: "POST",
+      path: "/login",
+      handler: User.login,
       options: {
-        // auth: {
-        //   access: {
-        //     scope: ['user']
-        //   }
-        // },
+        auth: false,
         validate: {
-          payload: false,
+          payload: Joi.object({
+            email: Joi.string()
+              .trim()
+              .email()
+              .min(10)
+              .max(64)
+              .required(),
+            password: Joi.string()
+              .trim()
+              .min(8)
+              .max(64)
+              .required()
+          }),
           query: false
         }
       }

@@ -14,7 +14,7 @@ const server = require("../../server");
 const User = require("mongoose").model("User");
 
 experiment("User Route Test: ", () => {
-  experiment("POST /account", () => {
+  experiment.skip("POST /account", () => {
     let options = {};
 
     beforeEach(async () => {
@@ -128,6 +128,88 @@ experiment("User Route Test: ", () => {
       options.payload = { ...restPayload };
       const { statusCode } = await server.inject(options);
       expect(statusCode).to.equal(400);
+    });
+  });
+
+  experiment("POST /account/login", () => {
+    let options = {};
+
+    beforeEach(async () => {
+      await User.deleteMany({});
+      await User({
+        name: "test user",
+        email: "test@test.com",
+        password: "testpassword"
+      }).save();
+
+      options = {
+        method: "POST",
+        url: "/account/login",
+        payload: {
+          email: "test@test.com",
+          password: "testpassword"
+        }
+      };
+    });
+
+    after(async () => {
+      await User.deleteMany({});
+    });
+
+    test("fails when the email is too short", async () => {
+      options.payload.email = "a@a.com";
+      const { statusCode } = await server.inject(options);
+      expect(statusCode).to.equal(400);
+    });
+
+    test("fails when the email is too long", async () => {
+      options.payload.email =
+        "aaaaaaaaaaaaaaaaaaaaaaaaaa@aaaaaaaaaaaaaaaaaaaaaaa.commmmmasdasds";
+      const { statusCode } = await server.inject(options);
+      expect(statusCode).to.equal(400);
+    });
+
+    test("fails when the password is too short", async () => {
+      options.payload.password = "asd";
+      const { statusCode } = await server.inject(options);
+      expect(statusCode).to.equal(400);
+    });
+
+    test("fails when the password is too long", async () => {
+      options.payload.password =
+        "asjdsjdddjaskldjakdjlasjdsjjfjhsjkgfsjkhvbskjbvhsfjbvhbasdasdasdd";
+      const { statusCode } = await server.inject(options);
+      expect(statusCode).to.equal(400);
+    });
+
+    test("fails when the user is not found", async () => {
+      await User.deleteMany({});
+      const { statusCode } = await server.inject(options);
+      expect(statusCode).to.equal(422);
+    });
+
+    test("fails when the password is wrong", async () => {
+      options.payload.password = "asdasdasd";
+      const { statusCode } = await server.inject(options);
+      expect(statusCode).to.equal(422);
+    });
+
+    test("returns the user object when the login is successful", async () => {
+      const { statusCode, result } = await server.inject(options);
+      expect(statusCode).to.equal(200);
+      expect(result.name)
+        .to.exist()
+        .and.to.be.a.string();
+      expect(result.email)
+        .to.exist()
+        .and.to.be.a.string();
+      expect(result.token)
+        .to.exist()
+        .and.to.be.a.string();
+      expect(result.investedCredits)
+        .to.exist()
+        .and.to.be.be.number();
+      expect(result.password).to.not.exist();
     });
   });
 });
