@@ -17,4 +17,5 @@ module.exports = () => {
   );
 
   require("../web/user/user.model");
+  require("../web/auction/auction.model");
 };

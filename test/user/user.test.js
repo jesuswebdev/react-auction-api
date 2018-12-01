@@ -14,7 +14,7 @@ const server = require("../../server");
 const User = require("mongoose").model("User");
 
 experiment("User Route Test: ", () => {
-  experiment.skip("POST /account", () => {
+  experiment("POST /account", () => {
     let options = {};
 
     beforeEach(async () => {
@@ -56,8 +56,7 @@ experiment("User Route Test: ", () => {
     });
 
     test("fails when there is no username", async () => {
-      const { name, ...restPayload } = options.payload;
-      options.payload = { ...restPayload };
+      delete options.payload.name;
       const { statusCode } = await server.inject(options);
       expect(statusCode).to.equal(400);
     });
@@ -87,8 +86,7 @@ experiment("User Route Test: ", () => {
     });
 
     test("fails when there is no email", async () => {
-      const { email, ...restPayload } = options.payload;
-      options.payload = { ...restPayload };
+      delete options.payload.email;
       const { statusCode } = await server.inject(options);
       expect(statusCode).to.equal(400);
     });
@@ -124,8 +122,7 @@ experiment("User Route Test: ", () => {
     });
 
     test("fails when there is no password", async () => {
-      const { password, ...restPayload } = options.payload;
-      options.payload = { ...restPayload };
+      delete options.payload.password;
       const { statusCode } = await server.inject(options);
       expect(statusCode).to.equal(400);
     });
@@ -169,6 +166,12 @@ experiment("User Route Test: ", () => {
       expect(statusCode).to.equal(400);
     });
 
+    test("fails when there is no email", async () => {
+      delete options.payload.email;
+      const { statusCode } = await server.inject(options);
+      expect(statusCode).to.equal(400);
+    });
+
     test("fails when the password is too short", async () => {
       options.payload.password = "asd";
       const { statusCode } = await server.inject(options);
@@ -178,6 +181,12 @@ experiment("User Route Test: ", () => {
     test("fails when the password is too long", async () => {
       options.payload.password =
         "asjdsjdddjaskldjakdjlasjdsjjfjhsjkgfsjkhvbskjbvhsfjbvhbasdasdasdd";
+      const { statusCode } = await server.inject(options);
+      expect(statusCode).to.equal(400);
+    });
+
+    test("fails when there is no password", async () => {
+      delete options.payload.password;
       const { statusCode } = await server.inject(options);
       expect(statusCode).to.equal(400);
     });

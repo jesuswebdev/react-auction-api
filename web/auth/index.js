@@ -3,7 +3,7 @@
 const Boom = require("boom");
 const Iron = require("iron");
 const { ironConfig } = require("../../config");
-// const User = require('mongoose').model('User');
+const User = require("mongoose").model("User");
 
 module.exports = {
   name: "authScheme",
@@ -11,8 +11,7 @@ module.exports = {
     const userScheme = server => {
       return {
         authenticate: async (req, h) => {
-          let token = null;
-          let payload = null;
+          let payload;
           let token = req.raw.req.headers["x-auth"] || null;
 
           if (!token) {
@@ -31,28 +30,23 @@ module.exports = {
 
           let credentials = null;
 
-          // try {
-          //   //find user
-          //     let foundUser = await User.findById(payload.id).populate('account_type', 'permissions role');
+          try {
+            //find user
+            let foundUser = await User.findById(payload.id);
 
-          //     if (!foundUser) {
-          //         return Boom.unauthorized('Error de autenticación. El usuario no existe');
-          //     }
-          //     const permissions = foundUser.account_type.permissions;
-          //     credentials = {
-          //         id: payload.id,
-          //         role: foundUser.account_type.role,
-          //         scope: [
-          //             ...permissions.create,
-          //             ...permissions.read,
-          //             ...permissions.update,
-          //             ...permissions.delete
-          //         ]
-          //     };
-          // }
-          // catch (error) {
-          //     return Boom.internal();
-          // }
+            if (!foundUser) {
+              return Boom.unauthorized(
+                "Error de autenticación. El usuario no existe"
+              );
+            }
+            credentials = {
+              id: payload.id,
+              role: "user",
+              scope: ["user"]
+            };
+          } catch (error) {
+            return Boom.internal();
+          }
 
           return h.authenticated({ credentials });
         } //authenticate

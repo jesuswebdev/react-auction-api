@@ -18,11 +18,19 @@ async function start() {
   try {
     configureMongoose();
 
+    await server.register(require("./web/auth"));
+
     await server.register([
       {
         plugin: require("./web/user/user.routes"),
         routes: {
           prefix: "/account"
+        }
+      },
+      {
+        plugin: require("./web/auction/auction.routes"),
+        routes: {
+          prefix: "/auction"
         }
       }
     ]);
