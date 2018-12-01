@@ -39,5 +39,28 @@ module.exports = {
         }
       }
     });
+
+    server.route({
+      method: "GET",
+      path: "/",
+      handler: Auction.find,
+      options: {
+        auth: false,
+        validate: {
+          payload: false,
+          query: Joi.object({
+            offset: Joi.number()
+              .positive()
+              .min(1),
+            limit: Joi.number()
+              .positive()
+              .min(1),
+            filter: Joi.string()
+              .trim()
+              .allow(["top", "new"])
+          })
+        }
+      }
+    });
   }
 };

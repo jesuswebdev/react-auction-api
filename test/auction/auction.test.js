@@ -28,8 +28,9 @@ const createAuction = () => ({
   title: "Test Auction",
   description: "This is a test description for a test auction.",
   img: "https://testurl.com/testimg.png",
-  minimun_bid: 150,
-  end_date: Date.now() + 604800000
+  minimun_bid: Math.ceil(Math.random() * 100),
+  end_date: Date.now() + 604800000,
+  views: Math.ceil(Math.random() * 1000)
 });
 
 const clearDB = async () => {
@@ -41,7 +42,7 @@ experiment("Auction Route Test: ", () => {
   after(async () => {
     await clearDB();
   });
-  experiment("POST /auction", () => {
+  experiment.skip("POST /auction", () => {
     let options = {};
 
     beforeEach(async () => {
@@ -128,4 +129,110 @@ experiment("Auction Route Test: ", () => {
       expect(statusCode).to.equal(400);
     });
   });
+
+  experiment("GET /auction", () => {
+    let options = {};
+
+    beforeEach(async () => {
+      await clearDB();
+      const userId = await createUser();
+      const auctionsArray = [...Array(30)].map(item => ({
+        ...createAuction(),
+        user: userId
+      }));
+      await Auction.insertMany(auctionsArray);
+      options = {
+        url: "/auction",
+        method: "GET",
+        credentials: {
+          id: userId,
+          scope: ["user"]
+        }
+      };
+    });
+
+    test("returns an array of auctions", async () => {
+      const { statusCode, result } = await server.inject(options);
+      expect(statusCode).to.equal(200);
+      expect(result).to.be.an.array();
+      result.map(auction => {
+        expect(auction.title)
+          .to.exist()
+          .and.to.be.a.string();
+        expect(auction.description)
+          .to.exist()
+          .and.to.be.a.string();
+        expect(auction.img)
+          .to.exist()
+          .and.to.be.a.string();
+        expect(auction.minimun_bid)
+          .to.exist()
+          .and.to.be.a.number()
+          .min(1);
+        expect(auction.end_date)
+          .to.exist()
+          .and.to.be.a.date();
+      });
+    });
+
+    test("returns an array of 5 auctions", async () => {
+      options.url += "?limit=5";
+      const { statusCode, result } = await server.inject(options);
+      expect(statusCode).to.equal(200);
+      expect(result)
+        .to.be.an.array()
+        .and.to.have.length(5);
+    });
+
+    test("returns an array of 3 auctions due to offset", async () => {
+      options.url += "?offset=27";
+      const { statusCode, result } = await server.inject(options);
+      expect(statusCode).to.equal(200);
+      expect(result)
+        .to.be.an.array()
+        .and.to.have.length(3);
+    });
+
+    test("returns an array of auctions ordered by view count", async () => {
+      options.url += "?filter=top";
+      const { statusCode, result } = await server.inject(options);
+      expect(statusCode).to.equal(200);
+      expect(result).to.be.an.array();
+      const { ordered } = result.reduce(
+        (acc, current) => {
+          return {
+            views: current.views,
+            ordered: true && acc.views >= current.views
+          };
+        },
+        { views: 999999, ordered: true }
+      );
+      expect(ordered).to.be.true();
+    });
+
+    test("returns an array of auctions ordered by creation date", async () => {
+      options.url += "?filter=new";
+      const { statusCode, result } = await server.inject(options);
+      expect(statusCode).to.equal(200);
+      expect(result).to.be.an.array();
+      const { ordered } = result.reduce(
+        (acc, current) => {
+          return {
+            createdAt: current.createdAt,
+            ordered: true && acc.createdAt >= current.createdAt
+          };
+        },
+        { createdAt: Date.now() + 604800000, ordered: true }
+      );
+      expect(ordered).to.be.true();
+    });
+  });
+
+  experiment("GET /auction/new", () => {});
+
+  experiment("GET /auction/top", () => {});
+
+  experiment("GET /auction/{id}", () => {});
+
+  experiment("POST /auction/{id}/bid", () => {});
 });
