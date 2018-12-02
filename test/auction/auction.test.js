@@ -1,6 +1,6 @@
-"use strict";
+'use strict';
 
-process.env.NODE_ENV = "test";
+process.env.NODE_ENV = 'test';
 process.env.PORT = 4000;
 
 const {
@@ -8,26 +8,26 @@ const {
   experiment,
   beforeEach,
   after
-} = (exports.lab = require("lab").script());
-const { expect } = require("code");
-const server = require("../../server");
-const User = require("mongoose").model("User");
-const Auction = require("mongoose").model("Auction");
+} = (exports.lab = require('lab').script());
+const { expect } = require('code');
+const server = require('../../server');
+const User = require('mongoose').model('User');
+const Auction = require('mongoose').model('Auction');
 
 const createUser = async () => {
   const { _id } = await User({
-    name: "test user",
-    email: "test@test.com",
-    password: "testpassword"
+    name: 'test user',
+    email: 'test@test.com',
+    password: 'testpassword'
   }).save();
 
   return _id.toString();
 };
 
 const createAuction = () => ({
-  title: "Test Auction",
-  description: "This is a test description for a test auction.",
-  img: "https://testurl.com/testimg.png",
+  title: 'Test Auction',
+  description: 'This is a test description for a test auction.',
+  img: 'https://testurl.com/testimg.png',
   minimun_bid: Math.ceil(Math.random() * 100),
   end_date: Date.now() + 604800000,
   views: Math.ceil(Math.random() * 1000)
@@ -38,99 +38,99 @@ const clearDB = async () => {
   await Auction.deleteMany({});
 };
 
-experiment("Auction Route Test: ", () => {
+experiment('Auction Route Test: ', () => {
   after(async () => {
     await clearDB();
   });
-  experiment.skip("POST /auction", () => {
+  experiment.skip('POST /auction', () => {
     let options = {};
 
     beforeEach(async () => {
       await clearDB();
       const userId = await createUser();
       options = {
-        url: "/auction",
-        method: "POST",
+        url: '/auction',
+        method: 'POST',
         credentials: {
           id: userId,
-          scope: ["user"]
+          scope: ['user']
         },
         payload: createAuction()
       };
     });
 
-    test("creates an auction", async () => {
+    test('creates an auction', async () => {
       const { statusCode } = await server.inject(options);
       expect(statusCode).to.equal(201);
     });
 
-    test("returns the id of the created auction", async () => {
+    test('returns the id of the created auction', async () => {
       const { statusCode, result } = await server.inject(options);
       expect(statusCode).to.equal(201);
       expect(result)
         .to.be.an.object()
-        .and.to.contain("id");
+        .and.to.contain('id');
       expect(result.id)
         .to.be.a.string()
         .and.to.have.length(24);
     });
 
-    test("fails when the title is too short", async () => {
-      options.payload.title = "asd";
+    test('fails when the title is too short', async () => {
+      options.payload.title = 'asd';
       const { statusCode } = await server.inject(options);
       expect(statusCode).to.equal(400);
     });
 
-    test("fails when there is no title", async () => {
+    test('fails when there is no title', async () => {
       delete options.payload.title;
       const { statusCode } = await server.inject(options);
       expect(statusCode).to.equal(400);
     });
 
-    test("fails when the description is too short", async () => {
-      options.payload.description = "asd";
+    test('fails when the description is too short', async () => {
+      options.payload.description = 'asd';
       const { statusCode } = await server.inject(options);
       expect(statusCode).to.equal(400);
     });
 
-    test("fails when the img is not a url", async () => {
-      options.payload.img = "testimage.png";
+    test('fails when the img is not a url', async () => {
+      options.payload.img = 'testimage.png';
       const { statusCode } = await server.inject(options);
       expect(statusCode).to.equal(400);
     });
 
-    test("fails when there is no img", async () => {
+    test('fails when there is no img', async () => {
       delete options.payload.img;
       const { statusCode } = await server.inject(options);
       expect(statusCode).to.equal(400);
     });
 
-    test("fails when the minimun bid is less than 1", async () => {
+    test('fails when the minimun bid is less than 1', async () => {
       options.payload.minimun_bid = 0;
       const { statusCode } = await server.inject(options);
       expect(statusCode).to.equal(400);
     });
 
-    test("fails when there is no miniumn bid", async () => {
+    test('fails when there is no miniumn bid', async () => {
       delete options.payload.minimun_bid;
       const { statusCode } = await server.inject(options);
       expect(statusCode).to.equal(400);
     });
 
-    test("fails when the end date is before the current date", async () => {
+    test('fails when the end date is before the current date', async () => {
       options.payload.end_date = Date.now() - 3600000;
       const { statusCode } = await server.inject(options);
       expect(statusCode).to.equal(400);
     });
 
-    test("fails when there is no end date", async () => {
+    test('fails when there is no end date', async () => {
       delete options.payload.end_date;
       const { statusCode } = await server.inject(options);
       expect(statusCode).to.equal(400);
     });
   });
 
-  experiment("GET /auction", () => {
+  experiment.skip('GET /auction', () => {
     let options = {};
 
     beforeEach(async () => {
@@ -142,16 +142,16 @@ experiment("Auction Route Test: ", () => {
       }));
       await Auction.insertMany(auctionsArray);
       options = {
-        url: "/auction",
-        method: "GET",
+        url: '/auction',
+        method: 'GET',
         credentials: {
           id: userId,
-          scope: ["user"]
+          scope: ['user']
         }
       };
     });
 
-    test("returns an array of auctions", async () => {
+    test('returns an array of auctions', async () => {
       const { statusCode, result } = await server.inject(options);
       expect(statusCode).to.equal(200);
       expect(result).to.be.an.array();
@@ -175,8 +175,8 @@ experiment("Auction Route Test: ", () => {
       });
     });
 
-    test("returns an array of 5 auctions", async () => {
-      options.url += "?limit=5";
+    test('returns an array of 5 auctions', async () => {
+      options.url += '?limit=5';
       const { statusCode, result } = await server.inject(options);
       expect(statusCode).to.equal(200);
       expect(result)
@@ -184,8 +184,8 @@ experiment("Auction Route Test: ", () => {
         .and.to.have.length(5);
     });
 
-    test("returns an array of 3 auctions due to offset", async () => {
-      options.url += "?offset=27";
+    test('returns an array of 3 auctions due to offset', async () => {
+      options.url += '?offset=27';
       const { statusCode, result } = await server.inject(options);
       expect(statusCode).to.equal(200);
       expect(result)
@@ -193,8 +193,8 @@ experiment("Auction Route Test: ", () => {
         .and.to.have.length(3);
     });
 
-    test("returns an array of auctions ordered by view count", async () => {
-      options.url += "?filter=top";
+    test('returns an array of auctions ordered by view count', async () => {
+      options.url += '?filter=top';
       const { statusCode, result } = await server.inject(options);
       expect(statusCode).to.equal(200);
       expect(result).to.be.an.array();
@@ -210,8 +210,8 @@ experiment("Auction Route Test: ", () => {
       expect(ordered).to.be.true();
     });
 
-    test("returns an array of auctions ordered by creation date", async () => {
-      options.url += "?filter=new";
+    test('returns an array of auctions ordered by creation date', async () => {
+      options.url += '?filter=new';
       const { statusCode, result } = await server.inject(options);
       expect(statusCode).to.equal(200);
       expect(result).to.be.an.array();
@@ -228,11 +228,64 @@ experiment("Auction Route Test: ", () => {
     });
   });
 
-  experiment("GET /auction/new", () => {});
+  experiment('GET /auction/{id}', () => {
+    let options = {};
+    let auctionId;
 
-  experiment("GET /auction/top", () => {});
+    beforeEach(async () => {
+      await clearDB();
+      const userId = await createUser();
+      const { _id } = await Auction({
+        ...createAuction(),
+        user: userId
+      }).save();
 
-  experiment("GET /auction/{id}", () => {});
+      options = {
+        url: '/auction/' + _id.toString(),
+        method: 'get'
+      };
+    });
 
-  experiment("POST /auction/{id}/bid", () => {});
+    after(async () => {
+      await clearDB();
+    });
+
+    test('fails when the auction is not found', async () => {
+      await clearDB();
+      const { statusCode } = await server.inject(options);
+      expect(statusCode).to.equal(404);
+    });
+
+    test('returns the auction object', async () => {
+      const { statusCode, result } = await server.inject(options);
+      expect(statusCode).to.equal(200);
+      expect(result).to.be.an.object();
+      expect(result.title)
+        .to.exist()
+        .and.to.be.a.string();
+      expect(result.description)
+        .to.exist()
+        .and.to.be.a.string();
+      expect(result.img)
+        .to.exist()
+        .and.to.be.a.string();
+      expect(result.views)
+        .to.exist()
+        .and.to.be.a.number();
+      expect(result.minimun_bid)
+        .to.exist()
+        .and.to.be.a.number();
+      expect(result.bids)
+        .to.exist()
+        .and.to.be.an.array();
+      expect(result.end_date)
+        .to.exist()
+        .and.to.be.a.date();
+      expect(result._id)
+        .to.exist()
+        .and.to.be.an.object();
+    });
+  });
+
+  experiment('POST /auction/{id}/bid', () => {});
 });

@@ -1,17 +1,17 @@
-const Auction = require("./auction.controller");
-const Joi = require("joi");
+const Auction = require('./auction.controller');
+const Joi = require('joi');
 
 module.exports = {
-  name: "auction-routes",
+  name: 'auction-routes',
   register: async (server, options) => {
     server.route({
-      method: "POST",
-      path: "/",
+      method: 'POST',
+      path: '/',
       handler: Auction.create,
       options: {
         auth: {
           access: {
-            scope: ["user"]
+            scope: ['user']
           }
         },
         validate: {
@@ -34,15 +34,15 @@ module.exports = {
             end_date: Joi.date()
               .min(Date.now())
               .required()
-          }),
+          }).options({ allowUnknown: true }), //test purposes only
           query: false
         }
       }
     });
 
     server.route({
-      method: "GET",
-      path: "/",
+      method: 'GET',
+      path: '/',
       handler: Auction.find,
       options: {
         auth: false,
@@ -57,7 +57,26 @@ module.exports = {
               .min(1),
             filter: Joi.string()
               .trim()
-              .allow(["top", "new"])
+              .allow(['top', 'new'])
+          })
+        }
+      }
+    });
+
+    server.route({
+      method: 'GET',
+      path: '/{id}',
+      handler: Auction.findById,
+      options: {
+        auth: false,
+        validate: {
+          payload: false,
+          query: false,
+          params: Joi.object({
+            id: Joi.string()
+              .trim()
+              .alphanum()
+              .length(24)
           })
         }
       }

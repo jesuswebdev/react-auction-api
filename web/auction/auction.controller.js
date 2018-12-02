@@ -1,12 +1,15 @@
-"use strict";
+'use strict';
 
-const Boom = require("boom");
-const Auction = require("mongoose").model("Auction");
+const Boom = require('boom');
+const Auction = require('mongoose').model('Auction');
 
 exports.create = async (req, h) => {
   let createdAuction;
   try {
-    createdAuction = await Auction(req.payload).save();
+    createdAuction = await Auction({
+      ...req.payload,
+      user: req.auth.credentials.id
+    }).save();
   } catch (error) {
     return Boom.internal();
   }
@@ -21,10 +24,10 @@ exports.find = async (req, h) => {
   const limit = query.limit || 0;
   const filter = query.filter || null;
 
-  if (filter === "new") {
+  if (filter === 'new') {
     sort = { createdAt: -1 };
   }
-  if (filter === "top") {
+  if (filter === 'top') {
     sort = { views: -1 };
   }
 
@@ -38,6 +41,23 @@ exports.find = async (req, h) => {
   }
 
   return foundAuctions;
+};
+
+exports.findById = async (req, h) => {
+  let foundAuction;
+
+  try {
+    foundAuction = await Auction.findByIdAndUpdate(req.params.id, {
+      $inc: { views: 1 }
+    }).populate('user', 'name');
+    if (!foundAuction) {
+      return Boom.notFound('Auction not found');
+    }
+  } catch (error) {
+    return Boom.internal();
+  }
+
+  return foundAuction;
 };
 
 exports.update = async (req, h) => {};
