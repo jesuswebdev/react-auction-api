@@ -2,6 +2,7 @@
 
 const Boom = require('boom');
 const Auction = require('mongoose').model('Auction');
+const Bid = require('mongoose').model('Bid');
 
 exports.create = async (req, h) => {
   let createdAuction;
@@ -63,3 +64,50 @@ exports.findById = async (req, h) => {
 exports.update = async (req, h) => {};
 
 exports.remove = async (req, h) => {};
+
+exports.bid = async (req, h) => {
+  let foundAuction;
+  let createdBid;
+  const amount = req.payload.amount;
+
+  try {
+    foundAuction = await Auction.findById(req.params.id).populate(
+      'current_bid',
+      'amount'
+    );
+
+    if (!foundAuction) {
+      return Boom.notFound('Auction not found.');
+    }
+
+    if (
+      amount < foundAuction.minimun_bid ||
+      amount < ((foundAuction.current_bid || {}).amount || 0)
+    ) {
+      return Boom.badData('Bid not valid.');
+    }
+
+    createdBid = await Bid({
+      user: req.auth.credentials.id,
+      auction: req.params.id,
+      amount
+    }).save();
+
+    await Bid.populate(createdBid, { path: 'user', select: 'name' });
+
+    const update = {
+      bids: [createdBid._id, ...foundAuction.bids],
+      current_bid: createdBid._id.toString()
+    };
+
+    await Auction.findByIdAndUpdate(req.params.id, update);
+  } catch (error) {
+    return Boom.internal();
+  }
+
+  return h
+    .response({ user: createdBid.user, amount: createdBid.amount })
+    .code(201);
+};
+
+//timeout function, set active to false, set the current bid, emit socket notification

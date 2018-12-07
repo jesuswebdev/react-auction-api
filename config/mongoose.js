@@ -1,7 +1,7 @@
-"use strict";
+'use strict';
 
-const mongoose = require("mongoose");
-const { db } = require("./index");
+const mongoose = require('mongoose');
+const { db } = require('./index');
 
 module.exports = () => {
   mongoose.connect(
@@ -9,13 +9,14 @@ module.exports = () => {
     { useNewUrlParser: true, useFindAndModify: false, useCreateIndex: true }
   );
   mongoose.connection.on(
-    "error",
-    console.error.bind(console, "connection error")
+    'error',
+    console.error.bind(console, 'connection error')
   );
-  mongoose.connection.on("open", () =>
-    console.log("Connection with database succeeded")
+  mongoose.connection.on('open', () =>
+    console.log('Connection with database succeeded')
   );
 
-  require("../web/user/user.model");
-  require("../web/auction/auction.model");
+  require('../web/user/user.model');
+  require('../web/auction/auction.model');
+  require('../web/bid/bid.model');
 };

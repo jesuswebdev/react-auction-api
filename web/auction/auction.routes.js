@@ -81,5 +81,26 @@ module.exports = {
         }
       }
     });
+
+    server.route({
+      method: 'POST',
+      path: '/{id}/bid',
+      handler: Auction.bid,
+      options: {
+        auth: {
+          access: {
+            scope: ['user']
+          }
+        },
+        validate: {
+          payload: Joi.object({
+            amount: Joi.number()
+              .positive()
+              .min(1)
+          }),
+          query: false
+        }
+      }
+    });
   }
 };

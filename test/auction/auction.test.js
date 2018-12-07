@@ -42,7 +42,7 @@ experiment('Auction Route Test: ', () => {
   after(async () => {
     await clearDB();
   });
-  experiment.skip('POST /auction', () => {
+  experiment('POST /auction', () => {
     let options = {};
 
     beforeEach(async () => {
@@ -130,7 +130,7 @@ experiment('Auction Route Test: ', () => {
     });
   });
 
-  experiment.skip('GET /auction', () => {
+  experiment('GET /auction', () => {
     let options = {};
 
     beforeEach(async () => {
@@ -287,5 +287,51 @@ experiment('Auction Route Test: ', () => {
     });
   });
 
-  experiment('POST /auction/{id}/bid', () => {});
+  experiment('POST /auction/{id}/bid', () => {
+    let options = {};
+    let auctionId;
+
+    beforeEach(async () => {
+      await clearDB();
+      const userId = await createUser();
+      const { _id, minimun_bid } = await Auction({
+        ...createAuction(),
+        user: userId
+      }).save();
+
+      options = {
+        url: `/auction/${_id.toString()}/bid`,
+        method: 'POST',
+        credentials: {
+          id: userId,
+          scope: ['user']
+        },
+        payload: {
+          amount: minimun_bid + 1
+        }
+      };
+    });
+
+    after(async () => {
+      await clearDB();
+    });
+
+    test('creates a bid', async () => {
+      const { statusCode, result } = await server.inject(options);
+      expect(statusCode).to.equal(201);
+      expect(result)
+        .to.be.an.object()
+        .and.to.contain(['user', 'amount']);
+      expect(result.user).to.be.an.object();
+      expect(result.user._id)
+        .to.exist()
+        .and.to.be.an.object();
+      expect(result.user.name)
+        .to.exist()
+        .and.to.be.a.string();
+      expect(result.amount)
+        .to.exist()
+        .and.to.be.a.number();
+    });
+  });
 });
