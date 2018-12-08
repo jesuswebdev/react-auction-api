@@ -1,14 +1,14 @@
-"use strict";
+'use strict';
 
-process.env.NODE_ENV = process.env.NODE_ENV || "development";
+process.env.NODE_ENV = process.env.NODE_ENV || 'development';
 
-const Hapi = require("hapi");
-const configureMongoose = require("./config/mongoose");
+const Hapi = require('hapi');
+const { db } = require('./config');
 
 const server = Hapi.server({
-  host: "localhost",
+  host: 'localhost',
   port: process.env.PORT || 8080,
-  address: "0.0.0.0",
+  address: '0.0.0.0',
   routes: {
     cors: true
   }
@@ -16,21 +16,26 @@ const server = Hapi.server({
 
 async function start() {
   try {
-    configureMongoose();
+    await server.register({
+      plugin: require('./config/mongoose'),
+      options: {
+        uri: db.uri
+      }
+    });
 
-    await server.register(require("./web/auth"));
+    await server.register(require('./web/auth'));
 
     await server.register([
       {
-        plugin: require("./web/user/user.routes"),
+        plugin: require('./web/user/user.routes'),
         routes: {
-          prefix: "/account"
+          prefix: '/account'
         }
       },
       {
-        plugin: require("./web/auction/auction.routes"),
+        plugin: require('./web/auction/auction.routes'),
         routes: {
-          prefix: "/auction"
+          prefix: '/auction'
         }
       }
     ]);
@@ -41,7 +46,7 @@ async function start() {
     process.exit(1);
   }
 
-  console.log("Server running at:", server.info.uri);
+  console.log('Server running at:', server.info.uri);
 }
 
 start();

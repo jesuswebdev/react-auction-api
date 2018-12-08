@@ -1,11 +1,11 @@
-"use strict";
+'use strict';
 
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
-const bcrypt = require("bcryptjs");
-const Iron = require("iron");
+const bcrypt = require('bcryptjs');
+const Iron = require('iron');
 const saltRounds = 12;
-const { ironConfig } = require("../../config");
+const { ironConfig } = require('../../config');
 
 const UserSchema = new Schema(
   {
@@ -21,7 +21,7 @@ const UserSchema = new Schema(
   { timestamps: true }
 );
 
-UserSchema.pre("save", async function() {
+UserSchema.pre('save', async function() {
   try {
     this.password = await bcrypt.hash(this.password, saltRounds);
     const payload = { email: this.email, id: this._id.toString() };
@@ -42,7 +42,7 @@ UserSchema.methods.comparePasswords = async function(password) {
   return false;
 };
 
-UserSchema.set("toJSON", {
+UserSchema.set('toJSON', {
   transform: doc => ({
     name: doc.name,
     email: doc.email,
@@ -52,4 +52,4 @@ UserSchema.set("toJSON", {
   })
 });
 
-module.exports = mongoose.model("User", UserSchema);
+module.exports = UserSchema;

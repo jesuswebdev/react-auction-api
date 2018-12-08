@@ -3,7 +3,7 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
-const auctionSchema = new Schema(
+const AuctionSchema = new Schema(
   {
     user: { type: mongoose.SchemaTypes.ObjectId, ref: 'User' },
     title: { type: String, required: true },
@@ -19,4 +19,4 @@ const auctionSchema = new Schema(
   { timestamps: true }
 );
 
-module.exports = mongoose.model('Auction', auctionSchema);
+module.exports = AuctionSchema;

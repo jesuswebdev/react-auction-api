@@ -1,10 +1,9 @@
 'use strict';
 
 const Boom = require('boom');
-const Auction = require('mongoose').model('Auction');
-const Bid = require('mongoose').model('Bid');
 
 exports.create = async (req, h) => {
+  const Auction = req.server.plugins['mongoose'].connection.model('Auction');
   let createdAuction;
   try {
     createdAuction = await Auction({
@@ -18,6 +17,7 @@ exports.create = async (req, h) => {
 };
 
 exports.find = async (req, h) => {
+  const Auction = req.server.plugins['mongoose'].connection.model('Auction');
   let foundAuctions;
   let sort = {};
   const query = req.query;
@@ -45,6 +45,7 @@ exports.find = async (req, h) => {
 };
 
 exports.findById = async (req, h) => {
+  const Auction = req.server.plugins['mongoose'].connection.model('Auction');
   let foundAuction;
 
   try {
@@ -66,6 +67,8 @@ exports.update = async (req, h) => {};
 exports.remove = async (req, h) => {};
 
 exports.bid = async (req, h) => {
+  const Auction = req.server.plugins['mongoose'].connection.model('Auction');
+  const Bid = req.server.plugins['mongoose'].connection.model('Bid');
   let foundAuction;
   let createdBid;
   const amount = req.payload.amount;

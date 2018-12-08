@@ -11,8 +11,12 @@ const {
 } = (exports.lab = require('lab').script());
 const { expect } = require('code');
 const server = require('../../server');
-const User = require('mongoose').model('User');
-const Auction = require('mongoose').model('Auction');
+
+const UserSchema = require('../../web/user/user.model');
+const AuctionSchema = require('../../web/auction/auction.model');
+
+const User = require('mongoose').model('User', UserSchema);
+const Auction = require('mongoose').model('Auction', AuctionSchema);
 
 const createUser = async () => {
   const { _id } = await User({

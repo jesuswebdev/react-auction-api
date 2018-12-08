@@ -1,14 +1,18 @@
-"use strict";
+'use strict';
 
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const bidSchema = new Schema(
   {
-    user: { type: mongoose.SchemaTypes.ObjectId, ref: "User", required: true },
+    user: {
+      type: mongoose.SchemaTypes.ObjectId,
+      ref: 'User',
+      required: true
+    },
     auction: {
       type: mongoose.SchemaTypes.ObjectId,
-      ref: "Auction",
+      ref: 'Auction',
       required: true
     },
     amount: { type: Number, required: true },
@@ -17,4 +21,4 @@ const bidSchema = new Schema(
   { timestamps: true }
 );
 
-module.exports = mongoose.model("Bid", bidSchema);
+module.exports = bidSchema;
