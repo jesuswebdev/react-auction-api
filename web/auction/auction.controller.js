@@ -108,6 +108,8 @@ exports.bid = async (req, h) => {
     return Boom.internal();
   }
 
+  req.server.publish(`/auction/${req.params.id}`, createdBid);
+
   return h
     .response({ user: createdBid.user, amount: createdBid.amount })
     .code(201);

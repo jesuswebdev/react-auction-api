@@ -29,9 +29,7 @@ module.exports = {
 
     const BidSchema = require('../web/bid/bid.model');
     connection.model('Bid', BidSchema);
-    // require().userModel(connection);
-    // require('../web/auction/auction.model')(connection);
-    // require('../web/bid/bid.model')(connection);
+
     server.expose('connection', connection);
   }
 };

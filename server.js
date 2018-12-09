@@ -3,6 +3,7 @@
 process.env.NODE_ENV = process.env.NODE_ENV || 'development';
 
 const Hapi = require('hapi');
+const Nes = require('nes');
 const { db } = require('./config');
 
 const server = Hapi.server({
@@ -16,16 +17,22 @@ const server = Hapi.server({
 
 async function start() {
   try {
-    await server.register({
-      plugin: require('./config/mongoose'),
-      options: {
-        uri: db.uri
-      }
-    });
-
-    await server.register(require('./web/auth'));
-
     await server.register([
+      {
+        plugin: Nes,
+        options: {
+          auth: false
+        }
+      },
+      {
+        plugin: require('./config/mongoose'),
+        options: {
+          uri: db.uri
+        }
+      },
+      {
+        plugin: require('./web/auth')
+      },
       {
         plugin: require('./web/user/user.routes'),
         routes: {
@@ -40,6 +47,7 @@ async function start() {
       }
     ]);
 
+    server.subscription('/auction/{id}', { auth: false });
     await server.start();
   } catch (err) {
     console.log(err);
