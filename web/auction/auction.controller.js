@@ -51,7 +51,14 @@ exports.findById = async (req, h) => {
   try {
     foundAuction = await Auction.findByIdAndUpdate(req.params.id, {
       $inc: { views: 1 }
-    }).populate('user', 'name');
+    })
+      .populate('user', 'name')
+      .populate('current_bid')
+      .populate({
+        path: 'bids',
+        select: 'user amount createdAt',
+        populate: { path: 'user', select: 'name' }
+      });
     if (!foundAuction) {
       return Boom.notFound('Auction not found');
     }
@@ -85,7 +92,7 @@ exports.bid = async (req, h) => {
 
     if (
       amount < foundAuction.minimun_bid ||
-      amount < ((foundAuction.current_bid || {}).amount || 0)
+      amount <= ((foundAuction.current_bid || {}).amount || 0)
     ) {
       return Boom.badData('Bid not valid.');
     }
@@ -108,7 +115,14 @@ exports.bid = async (req, h) => {
     return Boom.internal();
   }
 
-  req.server.publish(`/auction/${req.params.id}`, createdBid);
+  const publishBid = {
+    _id: createdBid._id.toString(),
+    user: createdBid.user,
+    amount: createdBid.amount,
+    createdAt: createdBid.createdAt
+  };
+
+  req.server.publish(`/auction/${req.params.id}`, publishBid);
 
   return h
     .response({ user: createdBid.user, amount: createdBid.amount })
