@@ -36,7 +36,8 @@ exports.find = async (req, h) => {
     foundAuctions = await Auction.find({ active: true })
       .sort(sort)
       .skip(skip)
-      .limit(limit);
+      .limit(limit)
+      .populate('current_bid', 'amount');
   } catch (error) {
     return Boom.internal();
   }
