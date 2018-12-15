@@ -11,7 +11,9 @@ const server = Hapi.server({
   port: process.env.PORT || 8080,
   address: '0.0.0.0',
   routes: {
-    cors: true
+    cors: {
+      additionalHeaders: ['x-auth']
+    }
   }
 });
 
